@@ -9,10 +9,10 @@ For project1, the function __limit(x)__ is the last piece of the puzzle. Without
 
 **Prerequisites**
 
+Title | Description
+------------|-------------
 Operating System | Windows10
------------------|---------------
 Programming Language | Python 3.x
-
 Library used | openCV, Numpy
 
 **Installing**
