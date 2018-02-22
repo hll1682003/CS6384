@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import sys
+from matplotlib import pyplot as plt
 
 def gamma(x): #gamma correction, process each tuple
     for i in range(0,x.shape[0]):
@@ -114,6 +115,8 @@ for i in range(H1, H2+1) :
             maxL=window[i-H1,j-W1,0]
 cv2.imshow('Specified Window', tmp)
 
+plt.hist(tmp.ravel(),256,[0,256]); plt.show()#draw the histogram directly
+
 print("The minimum Luminence in the window:",minL,"\nThe maximum luminence in the window: ",maxL)
 Linterval=(maxL-minL)/100 #calculate the luminence interval between discretized values
 accumulation=np.zeros([101],dtype=np.int_) #save the counted number of pixels for each of those values
@@ -163,6 +166,7 @@ for i in range(0,temp3.shape[0]):
         temp3[i,j]=np.array(gamma(temp3[i,j]),np.float_)
         temp3[i,j]=np.array(np.dot(255,temp3[i,j].T),np.float_)
         temp4[i,j]=np.array([temp3[i,j,2],temp3[i,j,1],temp3[i,j,0]],np.uint8).T
+plt.hist(temp4.ravel(),256,[0,256]); plt.show()#draw the histogram directly
 cv2.imshow('Final Streching',temp4)
 print("accumulation function:\n", accumulation)
 print("mappingchart:\n",mappingChart)
