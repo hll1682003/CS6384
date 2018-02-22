@@ -12,20 +12,12 @@ def gamma(x): #gamma correction, process each tuple
 
 
 def invgamma(x):    #inverse gamma correction, process each tuple
-    a,b,c=x[0],x[1],x[2]
-    if (a<0.03928):
-        a/=12.92
-    else:
-        a=pow(((a+0.055)/1.055),2.4)
-    if (b<0.03928):
-        b/=12.92
-    else:
-        b=pow(((b+0.055)/1.055),2.4)
-    if (c<0.03928):
-        c/=12.92
-    else:
-        c=pow(((c+0.055)/1.055),2.4)
-    return np.array([a,b,c],dtype=np.float_)
+    for i in range(0,x.shape[0]):
+        if (x[i]<0.03928):
+            x[i]/=12.92
+        else:
+            x[i]=pow(((x[i]+0.055)/1.055),2.4)
+    return x
 
 def XYZToLuv(x):
     if (x[0]==0 and x[1]==0 and x[2]==0):#handle the case when x=[0,0,0]
@@ -121,13 +113,12 @@ for i in range(H1, H2+1) :
         if (window[i-H1,j-W1,0]>maxL):#find out the max value of L
             maxL=window[i-H1,j-W1,0]
 cv2.imshow('Specified Window', tmp)
+
 print("The minimum Luminence in the window:",minL,"\nThe maximum luminence in the window: ",maxL)
 Linterval=(maxL-minL)/100 #calculate the luminence interval between discretized values
 accumulation=np.zeros([101],dtype=np.int_) #save the counted number of pixels for each of those values
 mappingChart=np.zeros([101],dtype=np.int_)
 print("Luminence interval=",Linterval)
-
-
 
 temp3=np.zeros([inputImage.shape[0],inputImage.shape[1],inputImage.shape[2]],dtype=np.float_) #simply copy the input image but save in float format
 temp4=np.zeros([inputImage.shape[0],inputImage.shape[1],inputImage.shape[2]],dtype=np.uint8) #save a stretched and ready to output matrix in integer format
@@ -175,8 +166,6 @@ for i in range(0,temp3.shape[0]):
 cv2.imshow('Final Streching',temp4)
 print("accumulation function:\n", accumulation)
 print("mappingchart:\n",mappingChart)
-        
-       
 print(minL,maxL)
 
 # end of example of going over window

@@ -8,38 +8,24 @@ def gamma(x): #gamma correction, process each tuple
             x[i] *= 12.92
         else:
             x[i] = 1.055*pow(x[i], 1/2.4)-0.055
-   #print("gamma(rgb)= ",x)
     return x
 
 
 def invgamma(x):    #inverse gamma correction, process each tuple
-    a,b,c=x[0],x[1],x[2]
-    if (a<0.03928):
-        a/=12.92
-    else:
-        a=pow(((a+0.055)/1.055),2.4)
-    if (b<0.03928):
-        b/=12.92
-    else:
-        b=pow(((b+0.055)/1.055),2.4)
-    if (c<0.03928):
-        c/=12.92
-    else:
-        c=pow(((c+0.055)/1.055),2.4)
-    #print(x)
-   #print("invgamma(rgb)= ",a,b,c)
-    return np.array([a,b,c],dtype=np.float_)
+    for i in range(0,x.shape[0]):
+    	if (x[i]<0.03928):
+    		x[i]/=12.92
+    	else:
+    		x[i]=pow(((x[i]+0.055)/1.055),2.4)
+    return x
 
 def XYZToLuv(x):
-    #settings=np.seterr(invalid='raise')
-    #print("XYZToLuv: XYZ ",x)
     if (x[0]==0 and x[1]==0 and x[2]==0):#handle the case when x=[0,0,0]
         return np.array([0,0,0],dtype=np.float_)
     if (x[1]>0.008856):
         L=116*pow(x[1],1/3)-16
     else:
-        L=903.3*x[1]
-    #print("L=",L)        
+        L=903.3*x[1]       
     d=x[0]+15*x[1]+3*x[2]
     uprime1=4*x[0]/d
     vprime1=9*x[1]/d
@@ -48,7 +34,6 @@ def XYZToLuv(x):
     return np.array([L,u,v],dtype=np.float_)
 
 def LuvToXYZ(x):
-    #print("LuvToXYZ",x)
     if (x[0]==0):#in case L is 0
         return np.array([0,0,0],dtype=np.float_)
     uprime2=(x[1]+13*0.19793943*x[0])/(13*x[0])  #
@@ -63,11 +48,9 @@ def LuvToXYZ(x):
     else:
         X=Y*2.25*uprime2/vprime2             
         Z=Y*(3-0.75*uprime2-5*vprime2)/vprime2
-    #print("Luv= ",x)
-    #print("XYZ= ",X,Y,Z)
     return np.array([X,Y,Z],dtype=np.float_)
 
-def limit(x):
+def limit(x): #restrict the RGB value to be in the range of [0,1]
     for i in range(0,x.shape[0]):
         if x[i]>1:
             x[i]=1
@@ -100,8 +83,6 @@ if(inputImage is None) :
     print(sys.argv[0], ": Failed to read image from: ", name_input)
     sys.exit()
 
-#cv2.imshow("input image: " + name_input, inputImage)
-
 rows, cols, bands = inputImage.shape # bands == 3
 W1 = round(w1*(cols-1))
 H1 = round(h1*(rows-1))
@@ -121,14 +102,10 @@ for i in range(H1, H2+1) :
             tmp[i, j] = [0,0,255]
         b, g, r = inputImage[i, j]
         window[i-H1,j-W1]=r,g,b
-        #print("input rgb:",window[i-H1,j-W1])
         window[i-H1,j-W1,0],window[i-H1,j-W1,1],window[i-H1,j-W1,2]=window[i-H1,j-W1,0]/255,window[i-H1,j-W1,1]/255,window[i-H1,j-W1,2]/255
-       #print("input normalized rgb:",window[i-H1,j-W1])
         window[i-H1,j-W1]=np.array(limit(invgamma(window[i-H1,j-W1])),np.float_).T #Limit the sRGB value within [0,1]
         window[i-H1,j-W1]=np.array(np.dot(rgbToXYZ,window[i-H1,j-W1]))
-        #print("XYZ=",window[i-H1,j-W1])
         window[i-H1,j-W1]=np.array(XYZToLuv(window[i-H1,j-W1]).T,np.float_)
-        #print("Luv=",window[i-H1,j-W1])
         if (window[i-H1,j-W1,0]<minL):#find out the min value of L
             minL=window[i-H1,j-W1,0]
         if (window[i-H1,j-W1,0]>maxL):#find out the max value of L
@@ -141,19 +118,14 @@ for i in range(0,temp3.shape[0]):#apply scaling to the whole image
     for j in range(0,temp3.shape[1]):
         b,g,r=inputImage[i,j]
         temp3[i,j]=np.array([r,g,b],dtype=np.float_)
-        #print("adjusted rgb=",temp3[i,j])
         temp3[i,j]=np.dot(1/255,temp3[i,j])
         temp3[i,j]=np.array(limit(invgamma(temp3[i,j])),dtype=np.float_)
-        #print("normalized rgb=",temp3[i,j])
         temp3[i,j]=np.array(np.dot(rgbToXYZ,temp3[i,j]))
-        #print("second XYZ=",temp3[i,j])
         temp3[i,j]=np.array(XYZToLuv(temp3[i,j]))
         if (temp3[i,j,0]<minL):
-            #print("lower L",temp3[i,j,0])
             temp3[i,j,0]=0
         else:
             if (temp3[i,j,0]>maxL):
-                #print("Higher L",temp3[i,j,0])
                 temp3[i,j,0]=100
             else:
                 if (minL!=maxL):#in case that all the Ls are the same(handle division by zero)
@@ -163,13 +135,11 @@ for i in range(0,temp3.shape[0]):#apply scaling to the whole image
         else:
             if (temp3[i,j,0]==0): #When the Luminance equals to 0(pure black), directly output [0,0,0] without further transformation
                 temp4[i,j]=[0,0,0]
-            #print("output",temp4[i,j])
             else:
                 if (b==g and b==r and r==g):
                     temp3[i,j,1]=-0.729411764706
                     temp3[i,j,2]=-0.266666666667
                 temp3[i,j]=np.array(LuvToXYZ(temp3[i,j]),np.float_)
-                #print(temp3[i,j],temp3[i,j].T)
                 temp3[i,j]=np.array(np.dot(XYZtorgb,temp3[i,j].T),np.float_)
                 temp3[i,j]=np.array(limit(temp3[i,j]),np.float_)
                 temp3[i,j]=np.array(gamma(temp3[i,j]),np.float_)
@@ -186,7 +156,6 @@ for i in range(0, rows) :
     for j in range(0, cols) :
         b, g, r = inputImage[i, j]
         outputImage[i,j] = [b, g, r]
-#cv2.imshow("output:", outputImage)
 cv2.imwrite(name_output, temp4);
 
 
