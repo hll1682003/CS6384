@@ -13,12 +13,13 @@ Title | Description
 ------------|-------------
 Operating System | Windows10
 Programming Language | Python 3.x
-Library used | openCV, Numpy
+Library used | openCV, Numpy, Matplotlib
 
 **Installing**
 
-After installing python 3 into OS, Run from the command line:
-pip3 install opencv-python
+After installing python 3 into OS, Run the following from the command line.
+for openCV: pip3 install opencv-python
+for numpy and matplotlib: python -m pip install --user numpy matplotlib 
 
 **Explanation of decisions**
 - Compared with the given program from the class, a red rectangle is added to outline the location of the window.

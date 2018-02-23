@@ -106,9 +106,9 @@ for i in range(H1, H2+1) :
         b, g, r = inputImage[i, j]
         window[i-H1,j-W1]=r,g,b
         window[i-H1,j-W1]=np.dot(1/255,window[i-H1,j-W1])
-        window[i-H1,j-W1]=np.array(limit(invgamma(window[i-H1,j-W1])),np.float_).T
+        window[i-H1,j-W1]=np.array(limit(invgamma(window[i-H1,j-W1])),np.float_)
         window[i-H1,j-W1]=np.array(np.dot(rgbToXYZ,window[i-H1,j-W1]))
-        window[i-H1,j-W1]=np.array(XYZToLuv(window[i-H1,j-W1]).T,np.float_)
+        window[i-H1,j-W1]=np.array(XYZToLuv(window[i-H1,j-W1]),np.float_)
         if (window[i-H1,j-W1,0]<minL):#find out the min value of L
             minL=window[i-H1,j-W1,0]
         if (window[i-H1,j-W1,0]>maxL):#find out the max value of L
@@ -132,7 +132,6 @@ for i in range(1,accumulation.shape[0]):#calculate the accumulation distribution
     mappingChart[i]=round((accumulation[i-1]+accumulation[i])*101/(2*window.shape[0]*window.shape[1])-0.5)
     if (mappingChart[i]==101):
         mappingChart[i]-=1
-print("histogram counting:\n", accumulation)
 temp3=np.zeros([inputImage.shape[0],inputImage.shape[1],inputImage.shape[2]],dtype=np.float_) #simply copy the input image but save in float format
 temp4=np.zeros([inputImage.shape[0],inputImage.shape[1],inputImage.shape[2]],dtype=np.uint8) #save a stretched and ready to output matrix in integer format
 for i in range(0,temp3.shape[0]):#Convert the original image to Luv and calculate the mapping chart
@@ -152,13 +151,11 @@ for i in range(0,temp3.shape[0]):#Convert the original image to Luv and calculat
                 if (minL!=maxL):
                     temp3[i,j,0]=mappingChart[int(round((temp3[i,j,0]-minL)/Linterval))]
         temp3[i,j]=np.array(LuvToXYZ(temp3[i,j]),np.float_)
-        temp3[i,j]=np.array(np.dot(XYZtorgb,temp3[i,j].T),np.float_)
+        temp3[i,j]=np.array(np.dot(XYZtorgb,temp3[i,j]),np.float_)
         temp3[i,j]=limit(temp3[i,j])
         temp3[i,j]=np.array(gamma(temp3[i,j]),np.float_)
-        temp3[i,j]=np.array(np.dot(255,temp3[i,j].T),np.float_)
-        temp4[i,j]=np.array([temp3[i,j,2],temp3[i,j,1],temp3[i,j,0]],np.uint8).T
-print("Counting:\n",accumulation)
-        
+        temp3[i,j]=np.array(np.dot(255,temp3[i,j]),np.float_)
+        temp4[i,j]=np.array([temp3[i,j,2],temp3[i,j,1],temp3[i,j,0]],np.uint8)        
 plt.hist(temp4.ravel(),256,[0,256]); plt.show()#draw the histogram directly
 cv2.imshow('Final Streching',temp4)
 print("accumulation function:\n", accumulation)
