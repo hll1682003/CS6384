@@ -118,13 +118,11 @@ cv2.imshow('Specified Window', tmp)
 plt.hist(tmp.ravel(),256,[0,256]); plt.show()#draw the histogram directly
 
 print("The minimum Luminence in the window:",minL,"\nThe maximum luminence in the window: ",maxL)
-Linterval=(maxL-minL)/100 #calculate the luminence interval between discretized values
 accumulation=np.zeros([101],dtype=np.int_) #save the counted number of pixels for each of those values
 mappingChart=np.zeros([101],dtype=np.int_)
-print("Luminence interval=",Linterval)
 for i in range(0,window.shape[0]):
     for j in range(0,window.shape[1]):
-        accumulation[int(round((window[i,j,0]-minL)/Linterval))]+=1
+        accumulation[int(round(window[i,j,0]))]+=1
 
 mappingChart[0]=accumulation[0]*101/(2*window.shape[0]*window.shape[1])
 for i in range(1,accumulation.shape[0]):#calculate the accumulation distribution and save it
@@ -149,7 +147,7 @@ for i in range(0,temp3.shape[0]):#Convert the original image to Luv and calculat
                 temp3[i,j,0]=100
             else:
                 if (minL!=maxL):
-                    temp3[i,j,0]=mappingChart[int(round((temp3[i,j,0]-minL)/Linterval))]
+                    temp3[i,j,0]=mappingChart[int(round(temp3[i,j,0]))]
         temp3[i,j]=np.array(LuvToXYZ(temp3[i,j]),np.float_)
         temp3[i,j]=np.array(np.dot(XYZtorgb,temp3[i,j]),np.float_)
         temp3[i,j]=limit(temp3[i,j])
